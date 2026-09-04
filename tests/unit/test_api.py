@@ -19,6 +19,18 @@ def test_health_endpoint() -> None:
     assert response.json() == {"status": "ok"}
 
 
+def test_root_endpoint_lists_api_links() -> None:
+    """Root endpoint should make manual browser testing clear."""
+    client = TestClient(app)
+
+    response = client.get("/")
+    payload = response.json()
+
+    assert response.status_code == 200
+    assert payload["service"] == "kaithi-drishyam"
+    assert payload["links"]["docs"] == "/docs"
+
+
 def test_status_endpoint_reports_current_capabilities() -> None:
     """Status endpoint should distinguish implemented and pending capabilities."""
     client = TestClient(app)

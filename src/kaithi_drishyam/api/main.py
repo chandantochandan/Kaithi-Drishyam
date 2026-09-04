@@ -36,6 +36,21 @@ def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
+@app.get("/")
+def root() -> dict[str, Any]:
+    """Return API entrypoint information."""
+    return {
+        "service": "kaithi-drishyam",
+        "status": "ok",
+        "links": {
+            "health": "/health",
+            "status": "/status",
+            "docs": "/docs",
+            "process_document": "/api/v1/documents/process",
+        },
+    }
+
+
 @app.get("/status")
 def status() -> dict[str, Any]:
     """Return implemented and pending capabilities."""
