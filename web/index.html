@@ -100,21 +100,25 @@
               </div>
               <div>
                 <dt>Preprocessing</dt>
-                <dd>Implemented in Python CLI and FastAPI</dd>
+                <dd id="preprocessingStatus">Waiting for upload</dd>
               </div>
               <div>
                 <dt>Segmentation</dt>
-                <dd>Implemented in Python CLI and FastAPI</dd>
+                <dd id="segmentationStatus">Waiting for upload</dd>
               </div>
               <div>
                 <dt>Recognition</dt>
-                <dd>Pending model training</dd>
+                <dd id="recognitionStatus">Pending model training</dd>
               </div>
               <div>
                 <dt>Bhashini</dt>
-                <dd>Denoiser client scaffold ready; live API contract pending</dd>
+                <dd id="bhashiniStatus">Denoiser client scaffold ready; live API contract pending</dd>
               </div>
             </dl>
+            <div class="line-summary" id="lineSummary" hidden>
+              <h4>Detected Lines</h4>
+              <ol id="lineList"></ol>
+            </div>
           </aside>
         </div>
       </section>
