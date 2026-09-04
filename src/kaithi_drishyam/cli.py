@@ -6,6 +6,8 @@ from pathlib import Path
 
 from loguru import logger
 
+from kaithi_drishyam.pipeline import DocumentPipeline
+
 
 def main() -> int:
     """Main entry point for the CLI."""
@@ -21,6 +23,16 @@ def main() -> int:
     process_parser.add_argument("image", type=Path, help="Path to document image")
     process_parser.add_argument(
         "-o", "--output", type=Path, help="Output file path (default: stdout)"
+    )
+    process_parser.add_argument(
+        "--output-dir",
+        type=Path,
+        help="Directory for processed image and cropped text-line images",
+    )
+    process_parser.add_argument(
+        "--no-images",
+        action="store_true",
+        help="Do not write processed/cropped images even when --output-dir is set",
     )
     process_parser.add_argument(
         "--format",
@@ -83,8 +95,31 @@ def main() -> int:
 def _process_document(args: argparse.Namespace) -> int:
     """Process a single document image."""
     logger.info(f"Processing document: {args.image}")
-    # TODO: Implement document processing pipeline
-    logger.warning("Document processing not yet implemented")
+    pipeline = DocumentPipeline()
+    result = pipeline.process(
+        image_path=args.image,
+        output_dir=args.output_dir,
+        write_images=not args.no_images,
+    )
+
+    if args.format == "json":
+        output = result.to_json()
+    else:
+        output = (
+            f"Processed: {result.source_image}\n"
+            f"Text lines detected: {len(result.text_lines)}\n"
+            f"Deskew angle: {result.processed_image.deskew_angle:.2f}\n"
+            f"Noise level: {result.processed_image.noise_level:.3f}\n"
+            "Recognition: not implemented\n"
+            "Transliteration: not implemented\n"
+        )
+
+    if args.output:
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(output, encoding="utf-8")
+    else:
+        print(output)
+
     return 0
 
 
