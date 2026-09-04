@@ -1,0 +1,180 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kaithi-drishyam"
+version = "0.1.0"
+description = "OCR system for digitizing historical Kaithi script land records into modern Hindi"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.9"
+authors = [
+    {name = "Kaithi-Drishyam Team"}
+]
+keywords = ["ocr", "kaithi", "hindi", "deep-learning", "crnn", "historical-documents"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Image Recognition",
+]
+
+dependencies = [
+    # Deep Learning
+    "torch>=2.0.0",
+    "torchvision>=0.15.0",
+    "lightning>=2.0.0",
+
+    # Image Processing
+    "opencv-python>=4.8.0",
+    "Pillow>=10.0.0",
+    "albumentations>=1.3.0",
+
+    # Data Processing
+    "numpy>=1.24.0",
+    "pandas>=2.0.0",
+
+    # Language Model
+    "kenlm>=0.2.0",
+
+    # Web Framework
+    "fastapi>=0.100.0",
+    "uvicorn[standard]>=0.23.0",
+    "python-multipart>=0.0.6",
+
+    # Document Export
+    "python-docx>=0.8.11",
+    "reportlab>=4.0.0",
+
+    # HTTP Client (for Bhashini API)
+    "httpx>=0.24.0",
+    "aiofiles>=23.0.0",
+
+    # Configuration
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "python-dotenv>=1.0.0",
+
+    # Utilities
+    "tqdm>=4.65.0",
+    "loguru>=0.7.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    # Testing
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-asyncio>=0.21.0",
+    "hypothesis>=6.82.0",
+
+    # Code Quality
+    "ruff>=0.0.280",
+    "mypy>=1.4.0",
+    "pre-commit>=3.3.0",
+
+    # Type Stubs
+    "types-Pillow>=10.0.0",
+    "types-tqdm>=4.65.0",
+]
+
+gpu = [
+    "torch>=2.0.0",
+    "torchvision>=0.15.0",
+]
+
+[project.scripts]
+kaithi-drishyam = "kaithi_drishyam.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/kaithi-drishyam/kaithi-drishyam"
+Documentation = "https://github.com/kaithi-drishyam/kaithi-drishyam#readme"
+Repository = "https://github.com/kaithi-drishyam/kaithi-drishyam"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"kaithi_drishyam" = ["py.typed", "data/*.json"]
+
+# Pytest Configuration
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+python_classes = ["Test*"]
+addopts = [
+    "-v",
+    "--tb=short",
+    "--strict-markers",
+]
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests",
+    "property: Property-based tests using Hypothesis",
+    "slow: Slow running tests",
+]
+asyncio_mode = "auto"
+
+# Coverage Configuration
+[tool.coverage.run]
+source = ["src/kaithi_drishyam"]
+branch = true
+omit = ["*/tests/*", "*/__pycache__/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+]
+
+# Ruff Configuration
+[tool.ruff]
+target-version = "py39"
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # Pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
+ignore = [
+    "E501",  # line too long (handled by formatter)
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["kaithi_drishyam"]
+
+# MyPy Configuration
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_ignores = true
+disallow_untyped_defs = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = [
+    "cv2.*",
+    "albumentations.*",
+    "kenlm.*",
+    "torch.*",
+    "torchvision.*",
+]
+ignore_missing_imports = true
