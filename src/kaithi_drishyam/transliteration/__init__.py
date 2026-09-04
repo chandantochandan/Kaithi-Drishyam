@@ -8,4 +8,16 @@ This module handles:
 - Bhashini NMT integration for modernization
 """
 
-__all__: list[str] = []
+from kaithi_drishyam.transliteration.service import (
+    KAITHI_TO_DEVANAGARI,
+    LEGAL_GLOSSARY,
+    TransliterationResult,
+    TransliterationService,
+)
+
+__all__ = [
+    "KAITHI_TO_DEVANAGARI",
+    "LEGAL_GLOSSARY",
+    "TransliterationResult",
+    "TransliterationService",
+]

@@ -13,6 +13,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from kaithi_drishyam.config import settings
 from kaithi_drishyam.pipeline import DocumentPipeline
 from kaithi_drishyam.preprocessing import DocumentProcessor
+from kaithi_drishyam.recognition import CRNNRecognizer
+from kaithi_drishyam.transliteration import TransliterationService
 
 
 app = FastAPI(
@@ -59,15 +61,21 @@ def status() -> dict[str, Any]:
         "implemented": [
             "image_preprocessing",
             "text_line_segmentation",
+            "crnn_model_architecture",
+            "kaithi_to_devanagari_transliteration",
+            "synthetic_data_generator",
             "pipeline_json_metadata",
             "cer_wer_metrics",
         ],
         "pending": [
-            "crnn_recognition",
-            "kaithi_to_devanagari_transliteration",
+            "trained_crnn_checkpoint",
             "bhashini_nmt_modernization",
-            "web_backend_integration",
         ],
+        "recognition": {
+            "architecture": "implemented",
+            "checkpoint_path": str(CRNNRecognizer().checkpoint_path),
+            "checkpoint_available": CRNNRecognizer().checkpoint_path.exists(),
+        },
         "bhashini": {
             "udyat_denoiser_client": "implemented",
             "api_key_configured": bool(settings.bhashini_api_key),
@@ -118,3 +126,20 @@ async def process_document(file: UploadFile = File(...)) -> dict[str, Any]:
     payload["source_image"] = file.filename
     payload["file_size_bytes"] = total_bytes
     return payload
+
+
+@app.post("/api/v1/transliterate")
+async def transliterate(payload: dict[str, str]) -> dict[str, Any]:
+    """Transliterate typed Kaithi text to Devanagari."""
+    text = payload.get("text", "")
+    if not text:
+        raise HTTPException(status_code=400, detail="Field 'text' is required")
+
+    result = TransliterationService().transliterate(text)
+    return {
+        "source_text": text,
+        "devanagari_text": result.devanagari_text,
+        "modern_hindi_text": result.modern_hindi_text,
+        "legal_term_mappings": result.legal_term_mappings,
+        "unmapped_characters": result.unmapped_characters,
+    }

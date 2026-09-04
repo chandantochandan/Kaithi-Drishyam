@@ -23,8 +23,8 @@ def test_pipeline_processes_image_and_writes_outputs(
 
     assert payload["source_image"] == str(sample_image_file)
     assert payload["segmentation"]["line_count"] == len(result.text_lines)
-    assert payload["recognition"]["status"] == "not_implemented"
-    assert payload["transliteration"]["status"] == "not_implemented"
+    assert payload["recognition"]["status"] == "model_unavailable"
+    assert payload["transliteration"]["status"] == "waiting_for_recognition"
     assert result.processed_image_path is not None
     assert cv2.imread(result.processed_image_path, cv2.IMREAD_GRAYSCALE) is not None
 

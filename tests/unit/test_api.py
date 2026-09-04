@@ -40,7 +40,7 @@ def test_status_endpoint_reports_current_capabilities() -> None:
 
     assert response.status_code == 200
     assert "image_preprocessing" in payload["implemented"]
-    assert "crnn_recognition" in payload["pending"]
+    assert "trained_crnn_checkpoint" in payload["pending"]
 
 
 def test_process_document_endpoint(sample_image_file: Path) -> None:
@@ -58,7 +58,7 @@ def test_process_document_endpoint(sample_image_file: Path) -> None:
     assert payload["source_image"] == "sample.png"
     assert "line_count" in payload["segmentation"]
     assert isinstance(payload["segmentation"]["lines"], list)
-    assert payload["recognition"]["status"] == "not_implemented"
+    assert payload["recognition"]["status"] == "model_unavailable"
 
 
 def test_process_document_rejects_unsupported_format(temp_dir: Path) -> None:
@@ -74,3 +74,13 @@ def test_process_document_rejects_unsupported_format(temp_dir: Path) -> None:
         )
 
     assert response.status_code == 415
+
+
+def test_transliterate_endpoint() -> None:
+    """Transliteration endpoint should convert typed Kaithi text."""
+    client = TestClient(app)
+
+    response = client.post("/api/v1/transliterate", json={"text": "𑂍𑂰𑂧"})
+
+    assert response.status_code == 200
+    assert response.json()["devanagari_text"] == "कार"

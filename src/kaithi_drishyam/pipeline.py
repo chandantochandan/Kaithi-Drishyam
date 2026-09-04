@@ -10,7 +10,9 @@ from typing import Any, Optional
 import cv2
 
 from kaithi_drishyam.preprocessing import DocumentProcessor, ProcessedImage
+from kaithi_drishyam.recognition import CRNNRecognizer, RecognitionSummary
 from kaithi_drishyam.segmentation import SegmentationEngine, TextLine
+from kaithi_drishyam.transliteration import TransliterationResult, TransliterationService
 
 
 @dataclass
@@ -22,6 +24,8 @@ class DocumentPipelineResult:
     line_image_dir: Optional[str]
     processed_image: ProcessedImage
     text_lines: list[TextLine]
+    recognition: RecognitionSummary
+    transliteration: Optional[TransliterationResult] = None
 
     def to_dict(self) -> dict[str, Any]:
         """Convert the result into a JSON-serializable dictionary."""
@@ -56,14 +60,8 @@ class DocumentPipelineResult:
                     for line in self.text_lines
                 ],
             },
-            "recognition": {
-                "status": "not_implemented",
-                "message": "CRNN OCR recognition is not implemented yet.",
-            },
-            "transliteration": {
-                "status": "not_implemented",
-                "message": "Kaithi-to-Devanagari transliteration is not implemented yet.",
-            },
+            "recognition": self._recognition_dict(),
+            "transliteration": self._transliteration_dict(),
         }
 
     def to_json(self, indent: int = 2) -> str:
@@ -76,6 +74,38 @@ class DocumentPipelineResult:
         filename = f"line_{line.reading_order:04d}.png"
         return str(Path(self.line_image_dir) / filename)
 
+    def _recognition_dict(self) -> dict[str, Any]:
+        return {
+            "status": self.recognition.status,
+            "message": self.recognition.message,
+            "text": self.recognition.text,
+            "average_confidence": self.recognition.average_confidence,
+            "lines": [
+                {
+                    "kaithi_text": line.kaithi_text,
+                    "confidence_score": line.confidence_score,
+                    "status": line.status,
+                    "low_confidence": line.low_confidence,
+                    "metadata": line.metadata,
+                }
+                for line in self.recognition.lines
+            ],
+        }
+
+    def _transliteration_dict(self) -> dict[str, Any]:
+        if self.transliteration is None:
+            return {
+                "status": "waiting_for_recognition",
+                "message": "Transliteration is ready, but no recognized Kaithi text is available.",
+            }
+        return {
+            "status": "transliterated",
+            "devanagari_text": self.transliteration.devanagari_text,
+            "modern_hindi_text": self.transliteration.modern_hindi_text,
+            "legal_term_mappings": self.transliteration.legal_term_mappings,
+            "unmapped_characters": self.transliteration.unmapped_characters,
+        }
+
 
 class DocumentPipeline:
     """Runs currently implemented document processing stages."""
@@ -84,9 +114,13 @@ class DocumentPipeline:
         self,
         processor: Optional[DocumentProcessor] = None,
         segmenter: Optional[SegmentationEngine] = None,
+        recognizer: Optional[CRNNRecognizer] = None,
+        transliterator: Optional[TransliterationService] = None,
     ) -> None:
         self.processor = processor or DocumentProcessor()
         self.segmenter = segmenter or SegmentationEngine()
+        self.recognizer = recognizer or CRNNRecognizer()
+        self.transliterator = transliterator or TransliterationService()
 
     def process(
         self,
@@ -97,6 +131,10 @@ class DocumentPipeline:
         """Preprocess a document and segment it into text-line images."""
         processed = self.processor.preprocess_image(image_path)
         lines = self.segmenter.detect_text_lines(processed)
+        recognition = self.recognizer.recognize_lines(lines)
+        transliteration = None
+        if recognition.text:
+            transliteration = self.transliterator.transliterate(recognition.text)
 
         processed_image_path: Optional[str] = None
         line_image_dir: Optional[str] = None
@@ -123,4 +161,6 @@ class DocumentPipeline:
             line_image_dir=line_image_dir,
             processed_image=processed,
             text_lines=lines,
+            recognition=recognition,
+            transliteration=transliteration,
         )

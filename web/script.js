@@ -50,6 +50,7 @@ function renderResult(payload) {
   const preprocessing = payload.preprocessing;
   const segmentation = payload.segmentation;
   const recognition = payload.recognition;
+  const transliteration = payload.transliteration;
 
   preprocessingStatus.textContent = [
     `${preprocessing.metadata.steps_applied.length} steps`,
@@ -58,6 +59,9 @@ function renderResult(payload) {
   ].join(" | ");
   segmentationStatus.textContent = `${segmentation.line_count} text line(s) detected`;
   recognitionStatus.textContent = recognition.message;
+  if (transliteration.status === "transliterated") {
+    recognitionStatus.textContent = `${recognition.message} Devanagari: ${transliteration.devanagari_text}`;
+  }
 
   if (segmentation.lines.length > 0) {
     lineSummary.hidden = false;

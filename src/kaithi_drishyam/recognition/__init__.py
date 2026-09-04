@@ -8,4 +8,15 @@ This module handles:
 - Confidence score calculation
 """
 
-__all__: list[str] = []
+from kaithi_drishyam.recognition.crnn import CRNNRecognizer, KaithiCRNN
+from kaithi_drishyam.recognition.models import RecognitionResult, RecognitionSummary
+from kaithi_drishyam.recognition.synthetic_data import SyntheticDataGenerator, SyntheticSample
+
+__all__ = [
+    "CRNNRecognizer",
+    "KaithiCRNN",
+    "RecognitionResult",
+    "RecognitionSummary",
+    "SyntheticDataGenerator",
+    "SyntheticSample",
+]

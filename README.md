@@ -9,10 +9,13 @@ This repository currently contains the implemented foundation for:
 - document image preprocessing
 - Bhashini Udyat denoiser API client with fallback behavior
 - text-line segmentation
+- CRNN recognition model architecture and checkpoint-aware inference wrapper
+- synthetic line-image training data generator
+- Kaithi-to-Devanagari transliteration service
 - OCR accuracy metric utilities
 - unit and property tests for preprocessing, segmentation, and metrics
 
-The CRNN recognition engine, transliteration and modernization services, REST API, web interface, and full end-to-end document pipeline are planned but not yet implemented.
+The trained OCR checkpoint, Bhashini NMT modernization, and production-grade end-to-end recognition accuracy are still pending.
 
 ## Tests
 
@@ -41,8 +44,9 @@ Current endpoints:
 - `GET /health`
 - `GET /status`
 - `POST /api/v1/documents/process`
+- `POST /api/v1/transliterate`
 
-The document endpoint currently runs preprocessing and text-line segmentation. OCR recognition and Kaithi-to-Devanagari transliteration are still pending.
+The document endpoint currently runs preprocessing and text-line segmentation, then attempts CRNN recognition if a trained checkpoint exists. Typed Kaithi text can be transliterated through the transliteration endpoint.
 
 ## Project Layout
 
