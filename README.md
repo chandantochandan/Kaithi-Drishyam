@@ -33,12 +33,19 @@ Latest local verification:
 ```text
 src/kaithi_drishyam/     Python package source
 tests/                   Unit and property tests
+web/                     Static presentation UI for Vercel
 data/                    Dataset placeholders
 models/                  Model checkpoint/pretrained placeholders
 requirements.md          Product requirements
 design.md                System design
 tasks.md                 Implementation task plan
 ```
+
+## Presentation UI
+
+The `web/` directory contains a static presentation interface that can be deployed directly on Vercel. It previews uploaded document images in the browser and explains the current implemented pipeline status.
+
+Vercel can use the root `package.json` build script to publish the static files from `dist/`.
 
 ## Configuration
 

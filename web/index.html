@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kaithi-Drishyam</title>
+    <meta
+      name="description"
+      content="OCR system for digitizing historical Kaithi-script land records into modern Hindi text."
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">क</span>
+        <span>Kaithi-Drishyam</span>
+      </div>
+      <nav aria-label="Primary">
+        <a href="#pipeline">Pipeline</a>
+        <a href="#demo">Demo</a>
+        <a href="#status">Status</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Historical Land Record OCR</p>
+          <h1>Kaithi-Drishyam</h1>
+          <p>
+            A focused OCR pipeline for preserving handwritten Kaithi land records and preparing
+            them for modern Hindi access.
+          </p>
+          <div class="hero-actions">
+            <a class="button primary" href="#demo">Open Demo</a>
+            <a class="button secondary" href="#status">View Status</a>
+          </div>
+        </div>
+        <div class="document-visual" aria-hidden="true">
+          <div class="paper">
+            <div class="stamp"></div>
+            <span></span><span></span><span></span><span></span><span></span>
+            <span class="short"></span><span></span><span class="short"></span>
+          </div>
+        </div>
+      </section>
+
+      <section id="pipeline" class="section">
+        <div class="section-heading">
+          <p class="eyebrow">Current Pipeline</p>
+          <h2>From scan cleanup to line segmentation</h2>
+        </div>
+        <div class="pipeline-grid">
+          <article>
+            <strong>1</strong>
+            <h3>Preprocess</h3>
+            <p>Validate image format, remove borders, deskew, denoise, and binarize.</p>
+          </article>
+          <article>
+            <strong>2</strong>
+            <h3>Segment</h3>
+            <p>Detect text-line regions and return bounding boxes in reading order.</p>
+          </article>
+          <article>
+            <strong>3</strong>
+            <h3>Recognize</h3>
+            <p>CRNN + CTC model training and inference are the next implementation milestone.</p>
+          </article>
+          <article>
+            <strong>4</strong>
+            <h3>Modernize</h3>
+            <p>Kaithi-to-Devanagari mapping, legal glossary, and Bhashini NMT are planned.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="demo" class="section demo-section">
+        <div class="section-heading">
+          <p class="eyebrow">Presentation Demo</p>
+          <h2>Upload a scan preview</h2>
+        </div>
+        <div class="demo-shell">
+          <label class="dropzone" for="documentInput">
+            <input id="documentInput" type="file" accept="image/jpeg,image/png,image/tiff" />
+            <span class="upload-icon">↑</span>
+            <span class="drop-title">Select document image</span>
+            <span class="drop-meta">JPEG, PNG, or TIFF up to the configured 50 MB limit</span>
+          </label>
+          <div class="preview-panel">
+            <canvas id="previewCanvas" width="640" height="420"></canvas>
+            <div class="empty-state" id="emptyState">No document selected</div>
+          </div>
+          <aside class="result-panel">
+            <h3>Pipeline Output</h3>
+            <dl>
+              <div>
+                <dt>File</dt>
+                <dd id="fileName">Waiting for upload</dd>
+              </div>
+              <div>
+                <dt>Preprocessing</dt>
+                <dd>Implemented in Python CLI</dd>
+              </div>
+              <div>
+                <dt>Segmentation</dt>
+                <dd>Implemented in Python CLI</dd>
+              </div>
+              <div>
+                <dt>Recognition</dt>
+                <dd>Pending model training</dd>
+              </div>
+              <div>
+                <dt>Bhashini</dt>
+                <dd>Denoiser client scaffold ready; live API contract pending</dd>
+              </div>
+            </dl>
+          </aside>
+        </div>
+      </section>
+
+      <section id="status" class="section status-section">
+        <div class="section-heading">
+          <p class="eyebrow">Build Status</p>
+          <h2>Where the project stands</h2>
+        </div>
+        <div class="status-grid">
+          <article>
+            <span class="metric">54</span>
+            <p>Passing tests across preprocessing, segmentation, metrics, and pipeline output.</p>
+          </article>
+          <article>
+            <span class="metric">Phase 1</span>
+            <p>Foundation complete enough to process scans into cleaned line crops and metadata.</p>
+          </article>
+          <article>
+            <span class="metric">Next</span>
+            <p>Real API endpoint, training data generator, CRNN model, and transliteration layer.</p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <script src="./script.js"></script>
+  </body>
+</html>

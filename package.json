@@ -1,0 +1,8 @@
+{
+  "name": "kaithi-drishyam-presentation",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "mkdir -p dist && cp -R web/. dist"
+  }
+}
