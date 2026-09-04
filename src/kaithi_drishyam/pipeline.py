@@ -9,6 +9,7 @@ from typing import Any, Optional
 
 import cv2
 
+from kaithi_drishyam.document_loader import DocumentLoader
 from kaithi_drishyam.preprocessing import DocumentProcessor, ProcessedImage
 from kaithi_drishyam.recognition import CRNNRecognizer, RecognitionSummary
 from kaithi_drishyam.segmentation import SegmentationEngine, TextLine
@@ -26,11 +27,17 @@ class DocumentPipelineResult:
     text_lines: list[TextLine]
     recognition: RecognitionSummary
     transliteration: Optional[TransliterationResult] = None
+    page_number: int = 1
+    source_language: str = "kaithi"
+    target_language: str = "devanagari"
 
     def to_dict(self) -> dict[str, Any]:
         """Convert the result into a JSON-serializable dictionary."""
         return {
             "source_image": self.source_image,
+            "page_number": self.page_number,
+            "source_language": self.source_language,
+            "target_language": self.target_language,
             "processed_image_path": self.processed_image_path,
             "line_image_dir": self.line_image_dir,
             "preprocessing": {
@@ -121,15 +128,59 @@ class DocumentPipeline:
         self.segmenter = segmenter or SegmentationEngine()
         self.recognizer = recognizer or CRNNRecognizer()
         self.transliterator = transliterator or TransliterationService()
+        self.loader = DocumentLoader()
 
     def process(
         self,
         image_path: Path,
         output_dir: Optional[Path] = None,
         write_images: bool = True,
+        source_language: str = "kaithi",
+        target_language: str = "devanagari",
     ) -> DocumentPipelineResult:
-        """Preprocess a document and segment it into text-line images."""
-        processed = self.processor.preprocess_image(image_path)
+        """Preprocess the first page of a document and segment it into text-line images."""
+        return self.process_pages(
+            image_path,
+            output_dir=output_dir,
+            write_images=write_images,
+            source_language=source_language,
+            target_language=target_language,
+        )[0]
+
+    def process_pages(
+        self,
+        document_path: Path,
+        output_dir: Optional[Path] = None,
+        write_images: bool = True,
+        source_language: str = "kaithi",
+        target_language: str = "devanagari",
+    ) -> list[DocumentPipelineResult]:
+        """Preprocess and segment every page in an image/PDF document."""
+        pages = self.loader.load(document_path)
+        return [
+            self._process_page(
+                document_path=document_path,
+                page_number=page.page_number,
+                image=page.image,
+                output_dir=output_dir / f"page_{page.page_number:04d}" if output_dir else None,
+                write_images=write_images,
+                source_language=source_language,
+                target_language=target_language,
+            )
+            for page in pages
+        ]
+
+    def _process_page(
+        self,
+        document_path: Path,
+        page_number: int,
+        image,
+        output_dir: Optional[Path],
+        write_images: bool,
+        source_language: str,
+        target_language: str,
+    ) -> DocumentPipelineResult:
+        processed = self.processor.preprocess_image(image)
         lines = self.segmenter.detect_text_lines(processed)
         recognition = self.recognizer.recognize_lines(lines)
         transliteration = None
@@ -156,11 +207,14 @@ class DocumentPipeline:
                     cv2.imwrite(str(line_path), line.cropped_image)
 
         return DocumentPipelineResult(
-            source_image=str(image_path),
+            source_image=str(document_path),
             processed_image_path=processed_image_path,
             line_image_dir=line_image_dir,
             processed_image=processed,
             text_lines=lines,
             recognition=recognition,
             transliteration=transliteration,
+            page_number=page_number,
+            source_language=source_language,
+            target_language=target_language,
         )

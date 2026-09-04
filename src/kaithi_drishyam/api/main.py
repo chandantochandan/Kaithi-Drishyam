@@ -11,6 +11,7 @@ from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
 from kaithi_drishyam.config import settings
+from kaithi_drishyam.document_loader import DocumentLoader
 from kaithi_drishyam.pipeline import DocumentPipeline
 from kaithi_drishyam.preprocessing import DocumentProcessor
 from kaithi_drishyam.recognition import CRNNRecognizer
@@ -64,6 +65,8 @@ def status() -> dict[str, Any]:
             "crnn_model_architecture",
             "kaithi_to_devanagari_transliteration",
             "synthetic_data_generator",
+            "pdf_document_ingestion",
+            "multilingual_request_metadata",
             "pipeline_json_metadata",
             "cer_wer_metrics",
         ],
@@ -88,12 +91,12 @@ def status() -> dict[str, Any]:
 async def process_document(file: UploadFile = File(...)) -> dict[str, Any]:
     """Preprocess and segment an uploaded document image."""
     suffix = Path(file.filename or "").suffix.lower()
-    if suffix not in DocumentProcessor.SUPPORTED_FORMATS:
+    if suffix not in DocumentLoader.SUPPORTED_FORMATS:
         raise HTTPException(
             status_code=415,
             detail={
-                "message": "Unsupported image format",
-                "supported_formats": sorted(DocumentProcessor.SUPPORTED_FORMATS),
+                "message": "Unsupported document format",
+                "supported_formats": sorted(DocumentLoader.SUPPORTED_FORMATS),
             },
         )
 
@@ -116,15 +119,25 @@ async def process_document(file: UploadFile = File(...)) -> dict[str, Any]:
             pipeline = DocumentPipeline(
                 processor=DocumentProcessor(use_bhashini_denoiser=bool(settings.bhashini_api_key))
             )
-            result = pipeline.process(tmp_path, write_images=False)
+            results = pipeline.process_pages(tmp_path, write_images=False)
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
         except Exception as exc:
             raise HTTPException(status_code=500, detail="Document processing failed") from exc
 
-    payload = result.to_dict()
-    payload["source_image"] = file.filename
-    payload["file_size_bytes"] = total_bytes
+    pages = [result.to_dict() for result in results]
+    for page in pages:
+        page["source_image"] = file.filename
+    payload = {
+        "source_image": file.filename,
+        "file_size_bytes": total_bytes,
+        "page_count": len(pages),
+        "pages": pages,
+    }
+    if len(pages) == 1:
+        payload.update(pages[0])
+        payload["page_count"] = 1
+        payload["pages"] = pages
     return payload
 
 

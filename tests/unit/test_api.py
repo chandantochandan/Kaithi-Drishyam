@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from fastapi.testclient import TestClient
+import fitz
 
 from kaithi_drishyam.api.main import app
 
@@ -74,6 +75,28 @@ def test_process_document_rejects_unsupported_format(temp_dir: Path) -> None:
         )
 
     assert response.status_code == 415
+
+
+def test_process_document_accepts_pdf(temp_dir: Path) -> None:
+    """Document endpoint should accept PDFs and return page-level results."""
+    client = TestClient(app)
+    pdf_path = temp_dir / "sample.pdf"
+    document = fitz.open()
+    page = document.new_page(width=360, height=180)
+    page.insert_text((40, 60), "Kaithi Drishyam sample", fontsize=18)
+    document.save(pdf_path)
+    document.close()
+
+    with pdf_path.open("rb") as pdf_file:
+        response = client.post(
+            "/api/v1/documents/process",
+            files={"file": ("sample.pdf", pdf_file, "application/pdf")},
+        )
+
+    payload = response.json()
+    assert response.status_code == 200
+    assert payload["page_count"] == 1
+    assert len(payload["pages"]) == 1
 
 
 def test_transliterate_endpoint() -> None:

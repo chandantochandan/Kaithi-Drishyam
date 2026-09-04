@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 import cv2
+import fitz
 
 from kaithi_drishyam.pipeline import DocumentPipeline
 from kaithi_drishyam.preprocessing import DocumentProcessor
@@ -42,3 +43,19 @@ def test_pipeline_json_is_serializable(sample_image_file: Path) -> None:
 
     assert payload["segmentation"]["line_count"] == len(result.text_lines)
     assert payload["processed_image_path"] is None
+
+
+def test_pipeline_processes_pdf_pages(temp_dir: Path) -> None:
+    """Pipeline should process rasterized PDF pages."""
+    pdf_path = temp_dir / "sample.pdf"
+    document = fitz.open()
+    page = document.new_page(width=360, height=180)
+    page.insert_text((40, 60), "Kaithi Drishyam sample", fontsize=18)
+    document.save(pdf_path)
+    document.close()
+
+    pipeline = DocumentPipeline(processor=DocumentProcessor(use_bhashini_denoiser=False))
+    results = pipeline.process_pages(pdf_path, write_images=False)
+
+    assert len(results) == 1
+    assert results[0].page_number == 1

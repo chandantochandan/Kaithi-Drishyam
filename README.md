@@ -12,6 +12,8 @@ This repository currently contains the implemented foundation for:
 - CRNN recognition model architecture and checkpoint-aware inference wrapper
 - synthetic line-image training data generator
 - Kaithi-to-Devanagari transliteration service
+- image and PDF document ingestion
+- multilingual request/response metadata for future language-specific models
 - OCR accuracy metric utilities
 - unit and property tests for preprocessing, segmentation, and metrics
 
@@ -46,7 +48,15 @@ Current endpoints:
 - `POST /api/v1/documents/process`
 - `POST /api/v1/transliterate`
 
-The document endpoint currently runs preprocessing and text-line segmentation, then attempts CRNN recognition if a trained checkpoint exists. Typed Kaithi text can be transliterated through the transliteration endpoint.
+The document endpoint accepts JPEG, PNG, TIFF, and PDF uploads. It currently runs preprocessing and text-line segmentation, then attempts CRNN recognition if a trained checkpoint exists. Typed Kaithi text can be transliterated through the transliteration endpoint.
+
+Recognition requires a trained checkpoint at:
+
+```text
+models/checkpoints/kaithi_crnn.pt
+```
+
+To train a useful checkpoint, the project needs labeled line images with matching ground-truth Kaithi text. Synthetic generation also requires a Kaithi-compatible `.ttf` font in `data/fonts/`.
 
 ## Project Layout
 

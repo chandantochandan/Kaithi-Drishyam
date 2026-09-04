@@ -57,7 +57,7 @@ function renderResult(payload) {
     `deskew ${preprocessing.deskew_angle.toFixed(2)} deg`,
     `noise ${preprocessing.noise_level.toFixed(3)}`,
   ].join(" | ");
-  segmentationStatus.textContent = `${segmentation.line_count} text line(s) detected`;
+  segmentationStatus.textContent = `${segmentation.line_count} text line(s) detected on ${payload.page_count || 1} page(s)`;
   recognitionStatus.textContent = recognition.message;
   if (transliteration.status === "transliterated") {
     recognitionStatus.textContent = `${recognition.message} Devanagari: ${transliteration.devanagari_text}`;
