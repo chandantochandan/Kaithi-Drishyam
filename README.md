@@ -28,6 +28,22 @@ Latest local verification:
 52 passed
 ```
 
+## API
+
+Start the FastAPI service with:
+
+```bash
+kaithi-drishyam server --reload
+```
+
+Current endpoints:
+
+- `GET /health`
+- `GET /status`
+- `POST /api/v1/documents/process`
+
+The document endpoint currently runs preprocessing and text-line segmentation. OCR recognition and Kaithi-to-Devanagari transliteration are still pending.
+
 ## Project Layout
 
 ```text
